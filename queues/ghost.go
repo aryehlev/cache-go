@@ -8,8 +8,8 @@ type Ghost[V any] struct {
 	data map[uint64]bool
 }
 
-func (g *Ghost[V]) Add(evicted *structures.Node[V]) {
-	evictedFromGhost, wasEvictedGhost := g.queue.Put(evicted.Hash, evicted.Hash)
+func (g *Ghost[V]) Add(hash uint64]) {
+	evictedFromGhost, wasEvictedGhost := g.queue.Enqueue(hash)
 
 	if wasEvictedGhost {
 		delete(g.data, evictedFromGhost.Hash)

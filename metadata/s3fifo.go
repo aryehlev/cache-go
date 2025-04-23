@@ -8,8 +8,8 @@ import (
 )
 
 type S3Fifo[K comparable, V any] struct {
-	main   structures.SimpleQueue[V]
-	small  structures.SimpleQueue[V]
+	main   structures.NodeQueue[V]
+	small  structures.NodeQueue[V]
 	hasher maphash.Hasher[K]
 
 	ghost queues.Ghost[V]
