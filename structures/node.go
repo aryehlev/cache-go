@@ -1,13 +1,13 @@
 package structures
 
 const (
-	Main QueuePlcmt = iota
-	Ghost
-	Small
-	None
+	None  = "none"
+	Main  = "main"
+	Ghost = "ghost"
+	Small = "small"
 )
 
-type QueuePlcmt int8
+type QueuePlcmt string
 
 type Node[V any] struct {
 	v                 V
@@ -18,8 +18,23 @@ type Node[V any] struct {
 	Prev              *Node[V]
 }
 
+func NewNode[V any](v V, hash uint64) *Node[V] {
+	return &Node[V]{
+		v:    v,
+		Hash: hash,
+	}
+}
+
 func (n *Node[V]) Hit() {
 	n.Count++
+}
+
+func (n *Node[V]) SetVal(value V) {
+	n.v = value
+}
+
+func (n *Node[V]) GetVal() V {
+	return n.v
 }
 
 func (n *Node[V]) EvictedPlcmt() QueuePlcmt {

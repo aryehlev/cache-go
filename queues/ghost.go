@@ -2,21 +2,28 @@ package queues
 
 import "s3fifo/structures"
 
-type Ghost[V any] struct {
-	queue structures.SimpleQueue[uint64]
+type Ghost struct {
+	queue *structures.SimpleQueue[uint64]
 
 	data map[uint64]bool
 }
 
-func (g *Ghost[V]) Add(hash uint64]) {
-	evictedFromGhost, wasEvictedGhost := g.queue.Enqueue(hash)
-
-	if wasEvictedGhost {
-		delete(g.data, evictedFromGhost.Hash)
+func NewGhost(size int) *Ghost {
+	return &Ghost{
+		data:  make(map[uint64]bool),
+		queue: structures.NewSimpleQueue[uint64](size),
 	}
 }
 
-func (g *Ghost[V]) Exists(key uint64) bool {
+func (g *Ghost) Put(hash uint64) {
+	evictedFromGhost, wasEvictedGhost := g.queue.Enqueue(hash)
+	g.data[hash] = true
+	if wasEvictedGhost {
+		delete(g.data, evictedFromGhost)
+	}
+}
+
+func (g *Ghost) GetAndDel(key uint64) bool {
 	if g.data[key] {
 		delete(g.data, key)
 		return true

@@ -7,6 +7,12 @@ type NodeQueue[T any] struct {
 	length   int
 }
 
+func NewNodeQueue[T any](capacity int) *NodeQueue[T] {
+	return &NodeQueue[T]{
+		capacity: capacity,
+	}
+}
+
 func (s *NodeQueue[T]) Put(val T, hash uint64) (evicted *Node[T], wasEviction bool) {
 	newNode := &Node[T]{
 		v:    val,
@@ -19,18 +25,21 @@ func (s *NodeQueue[T]) Put(val T, hash uint64) (evicted *Node[T], wasEviction bo
 func (s *NodeQueue[T]) PutNode(newNode *Node[T]) (evicted *Node[T], wasEviction bool) {
 	if s.length == 0 {
 		s.First = newNode
-		s.Last = s.First
+		s.Last = newNode
 
+		s.length++
 		return
 	}
 
+	s.length++
+	s.Last.Next = newNode
 	newNode.Prev = s.Last
 	s.Last = newNode
 
-	if s.length >= s.capacity {
+	if s.length > s.capacity {
 		evicted = s.First
 		wasEviction = true
-
+		s.length--
 		s.First = s.First.Next
 	}
 

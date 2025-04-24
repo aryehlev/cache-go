@@ -1,4 +1,4 @@
-package metadata
+package s3fifo
 
 //
 //import "s3fifo/structures"
