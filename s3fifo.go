@@ -1,13 +1,13 @@
 package s3fifo
 
 import (
+	"github.com/dolthub/maphash"
+
 	"github.com/aryehlev/s3fifo/queues"
 	"github.com/aryehlev/s3fifo/structures"
-
-	"github.com/dolthub/maphash"
 )
 
-type S3Fifo[K comparable, V any] struct {
+type Cache[K comparable, V any] struct {
 	hasher maphash.Hasher[K]
 
 	main  queues.Main[V]
@@ -17,20 +17,20 @@ type S3Fifo[K comparable, V any] struct {
 	data map[uint64]*structures.Node[V]
 }
 
-func New[K comparable, V any](size int) S3Fifo[K, V] {
+func New[K comparable, V any](size int) Cache[K, V] {
 	smallSize := size / 10
 	mainSize := size - smallSize
 
-	return S3Fifo[K, V]{
+	return Cache[K, V]{
 		data:   make(map[uint64]*structures.Node[V]),
 		main:   queues.NewMain[V](mainSize),
 		small:  queues.NewSmall[V](smallSize),
-		ghost:  queues.NewGhost(size),
+		ghost:  queues.NewGhost(mainSize),
 		hasher: maphash.NewHasher[K](),
 	}
 }
 
-func (sf S3Fifo[K, V]) Set(key K, v V) {
+func (sf Cache[K, V]) Set(key K, v V) {
 	hash := sf.hasher.Hash(key)
 	if node, ok := sf.data[hash]; ok {
 		node.Hit()
@@ -70,7 +70,7 @@ func (sf S3Fifo[K, V]) Set(key K, v V) {
 	}
 }
 
-func (sf S3Fifo[K, V]) Get(key K) (v V, ok bool) {
+func (sf Cache[K, V]) Get(key K) (v V, ok bool) {
 	hash := sf.hasher.Hash(key)
 	if node, okMap := sf.data[hash]; okMap {
 		node.Hit()
