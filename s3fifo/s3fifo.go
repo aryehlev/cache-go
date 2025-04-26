@@ -1,8 +1,8 @@
 package s3fifo
 
 import (
-	"s3fifo/queues"
-	"s3fifo/structures"
+	"github.com/aryehlev/s3fifo/queues"
+	"github.com/aryehlev/s3fifo/structures"
 
 	"github.com/dolthub/maphash"
 )

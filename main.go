@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"s3fifo/s3fifo"
+	"github.com/aryehlev/s3fifo/s3fifo"
 )
 
 func main() {

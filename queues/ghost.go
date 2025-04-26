@@ -1,6 +1,6 @@
 package queues
 
-import "s3fifo/structures"
+import "github.com/aryehlev/s3fifo/structures"
 
 type Ghost struct {
 	queue *structures.SimpleQueue[uint64]

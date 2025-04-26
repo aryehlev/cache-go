@@ -1,4 +1,4 @@
-module s3fifo
+module github.com/aryehlev/s3fifo
 
 go 1.24
 
