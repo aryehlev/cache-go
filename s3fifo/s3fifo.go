@@ -8,11 +8,11 @@ import (
 )
 
 type S3Fifo[K comparable, V any] struct {
-	main   *structures.NodeQueue[V]
-	small  *structures.NodeQueue[V]
 	hasher maphash.Hasher[K]
 
-	ghost *queues.Ghost
+	main  queues.Main[V]
+	small queues.Small[V]
+	ghost queues.Ghost
 
 	data map[uint64]*structures.Node[V]
 }
@@ -23,8 +23,8 @@ func New[K comparable, V any](size int) S3Fifo[K, V] {
 
 	return S3Fifo[K, V]{
 		data:   make(map[uint64]*structures.Node[V]),
-		main:   structures.NewNodeQueue[V](mainSize),
-		small:  structures.NewNodeQueue[V](smallSize),
+		main:   queues.NewMain[V](mainSize),
+		small:  queues.NewSmall[V](smallSize),
 		ghost:  queues.NewGhost(size),
 		hasher: maphash.NewHasher[K](),
 	}
@@ -47,33 +47,26 @@ func (sf S3Fifo[K, V]) Set(key K, v V) {
 	sf.data[hash] = node
 
 	if sf.ghost.GetAndDel(hash) {
-		node.CurrentQueuePlcmt = structures.Main
-		evicted, needEviction = sf.main.PutNode(node)
+		evicted, needEviction = sf.main.Put(node)
 	} else {
-		node.CurrentQueuePlcmt = structures.Small
-		evicted, needEviction = sf.small.PutNode(node)
+		evicted, needEviction = sf.small.Put(node)
 	}
 
 	for needEviction && iterations < 5 {
 		iterations++
 
-		switch evicted.EvictedPlcmt() {
+		switch evicted.EvictionPlacement() {
 		case structures.Small:
-			evicted.CurrentQueuePlcmt = structures.Small
-			evicted, needEviction = sf.small.PutNode(evicted)
+			evicted, needEviction = sf.small.Put(evicted)
 		case structures.Main:
-			evicted.CurrentQueuePlcmt = structures.Main
-			evicted, needEviction = sf.main.PutNode(evicted)
+			evicted, needEviction = sf.main.Put(evicted)
 		case structures.Ghost:
-			evicted.CurrentQueuePlcmt = structures.Ghost
 			delete(sf.data, evicted.Hash)
 			sf.ghost.Put(evicted.Hash)
 		case structures.None:
-			evicted.CurrentQueuePlcmt = structures.None
 			delete(sf.data, evicted.Hash)
 			break
 		}
-
 	}
 }
 

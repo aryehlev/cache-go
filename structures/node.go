@@ -25,6 +25,14 @@ func NewNode[V any](v V, hash uint64) *Node[V] {
 	}
 }
 
+func (n *Node[V]) Small() {
+	n.CurrentQueuePlcmt = Small
+}
+
+func (n *Node[V]) Main() {
+	n.CurrentQueuePlcmt = Main
+}
+
 func (n *Node[V]) Hit() {
 	n.Count++
 }
@@ -37,7 +45,7 @@ func (n *Node[V]) GetVal() V {
 	return n.v
 }
 
-func (n *Node[V]) EvictedPlcmt() QueuePlcmt {
+func (n *Node[V]) EvictionPlacement() QueuePlcmt {
 	switch n.CurrentQueuePlcmt {
 	case Small:
 		return n.getFromSmall()
