@@ -1,10 +1,9 @@
 package s3fifo
 
 import (
-	"github.com/dolthub/maphash"
-
 	"github.com/aryehlev/s3fifo/queues"
 	"github.com/aryehlev/s3fifo/structures"
+	"github.com/dolthub/maphash"
 )
 
 type Cache[K comparable, V any] struct {
@@ -15,6 +14,8 @@ type Cache[K comparable, V any] struct {
 	ghost *queues.Ghost
 
 	data map[uint64]*structures.Node[V]
+
+	cap int
 }
 
 func New[K comparable, V any](size int) Cache[K, V] {
@@ -27,6 +28,7 @@ func New[K comparable, V any](size int) Cache[K, V] {
 		small:  queues.NewSmall[V](smallSize),
 		ghost:  queues.NewGhost(mainSize),
 		hasher: maphash.NewHasher[K](),
+		cap:    size,
 	}
 }
 
@@ -65,7 +67,7 @@ func (sf Cache[K, V]) Set(key K, v V) {
 		evicted, needEviction = sf.small.Put(node)
 	}
 
-	for needEviction && iterations < 20 {
+	for needEviction {
 		iterations++
 
 		switch evicted.EvictionPlacement() {
@@ -73,6 +75,9 @@ func (sf Cache[K, V]) Set(key K, v V) {
 			evicted, needEviction = sf.small.Put(evicted)
 		case structures.Main:
 			evicted, needEviction = sf.main.Put(evicted)
+			if needEviction && iterations > 20 {
+				evicted.CurrentQueuePlcmt = structures.None
+			}
 		case structures.Ghost:
 			sf.ghost.Put(evicted.Hash)
 			fallthrough
@@ -92,4 +97,8 @@ func (sf Cache[K, V]) Get(key K) (v V, ok bool) {
 	}
 
 	return
+}
+
+func (sf Cache[K, V]) Size() int {
+	return len(sf.data)
 }
