@@ -18,6 +18,10 @@ func NewGhost(size int) *Ghost {
 }
 
 func (g Ghost) Put(hash uint64) {
+	if g.data[hash] {
+		return
+	}
+
 	evictedFromGhost, wasEvictedGhost := g.queue.Enqueue(hash)
 	g.data[hash] = true
 	if wasEvictedGhost {
