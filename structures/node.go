@@ -1,10 +1,10 @@
 package structures
 
 const (
-	None  = "none"
-	Main  = "main"
-	Ghost = "ghost"
-	Small = "small"
+	None  QueuePlcmt = "none"
+	Main  QueuePlcmt = "main"
+	Ghost QueuePlcmt = "ghost"
+	Small QueuePlcmt = "small"
 )
 
 type QueuePlcmt string
@@ -34,7 +34,9 @@ func (n *Node[V]) Main() {
 }
 
 func (n *Node[V]) Hit() {
-	n.Count++
+	if n.Count < 3 {
+		n.Count++
+	}
 }
 
 func (n *Node[V]) SetVal(value V) {
@@ -62,7 +64,7 @@ func (n *Node[V]) getFromSmall() QueuePlcmt {
 	if n.Count == 0 {
 		return Ghost
 	} else {
-		n.Count--
+		n.Count = 0
 		return Main
 	}
 }

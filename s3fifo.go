@@ -12,7 +12,7 @@ type Cache[K comparable, V any] struct {
 
 	main  queues.Main[V]
 	small queues.Small[V]
-	ghost queues.Ghost
+	ghost *queues.Ghost
 
 	data map[uint64]*structures.Node[V]
 }
@@ -28,6 +28,19 @@ func New[K comparable, V any](size int) Cache[K, V] {
 		ghost:  queues.NewGhost(mainSize),
 		hasher: maphash.NewHasher[K](),
 	}
+}
+
+func (sf Cache[K, V]) Where(key K) structures.QueuePlcmt {
+	hash := sf.hasher.Hash(key)
+	if sf.ghost.Get(hash) {
+		return structures.Ghost
+	}
+
+	if n, ok := sf.data[hash]; ok {
+		return n.CurrentQueuePlcmt
+	}
+
+	return structures.None
 }
 
 func (sf Cache[K, V]) Set(key K, v V) {
@@ -52,7 +65,7 @@ func (sf Cache[K, V]) Set(key K, v V) {
 		evicted, needEviction = sf.small.Put(node)
 	}
 
-	for needEviction && iterations < 5 {
+	for needEviction && iterations < 20 {
 		iterations++
 
 		switch evicted.EvictionPlacement() {
@@ -61,11 +74,11 @@ func (sf Cache[K, V]) Set(key K, v V) {
 		case structures.Main:
 			evicted, needEviction = sf.main.Put(evicted)
 		case structures.Ghost:
-			delete(sf.data, evicted.Hash)
 			sf.ghost.Put(evicted.Hash)
+			fallthrough
 		case structures.None:
 			delete(sf.data, evicted.Hash)
-			break
+			needEviction = false
 		}
 	}
 }

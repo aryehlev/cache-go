@@ -8,8 +8,8 @@ type Ghost struct {
 	data map[uint64]bool
 }
 
-func NewGhost(size int) Ghost {
-	return Ghost{
+func NewGhost(size int) *Ghost {
+	return &Ghost{
 		data:  make(map[uint64]bool),
 		queue: structures.NewSimpleQueue[uint64](size),
 	}
@@ -30,4 +30,8 @@ func (g Ghost) GetAndDel(key uint64) bool {
 	}
 
 	return false
+}
+
+func (g Ghost) Get(key uint64) bool {
+	return g.data[key]
 }
