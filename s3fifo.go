@@ -47,13 +47,6 @@ func (sf Cache[K, V]) Where(key K) structures.QueuePlcmt {
 
 func (sf Cache[K, V]) Set(key K, v V) {
 	hash := sf.hasher.Hash(key)
-	if node, ok := sf.data[hash]; ok {
-		node.Hit()
-		node.SetVal(v)
-		return
-	}
-
-	iterations := 0
 
 	var evicted *structures.Node[V]
 	var needEviction bool
@@ -67,9 +60,9 @@ func (sf Cache[K, V]) Set(key K, v V) {
 		evicted, needEviction = sf.small.Put(node)
 	}
 
+	iterations := 0
 	for needEviction {
 		iterations++
-
 		switch evicted.EvictionPlacement() {
 		case structures.Small:
 			evicted, needEviction = sf.small.Put(evicted)

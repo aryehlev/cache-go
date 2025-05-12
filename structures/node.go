@@ -5,6 +5,8 @@ const (
 	Main  QueuePlcmt = "main"
 	Ghost QueuePlcmt = "ghost"
 	Small QueuePlcmt = "small"
+
+	maxCount = 5
 )
 
 type QueuePlcmt string
@@ -34,7 +36,7 @@ func (n *Node[V]) Main() {
 }
 
 func (n *Node[V]) Hit() {
-	if n.Count < 3 {
+	if n.Count < maxCount {
 		n.Count++
 	}
 }

@@ -49,10 +49,12 @@ func (s *NodeQueue[T]) PutNode(newNode *Node[T]) (evicted *Node[T], wasEviction 
 func (s *NodeQueue[T]) Pop() T {
 	val := s.First.v
 	s.First = s.First.Next
+	s.length--
 	return val
 }
 
 func (s *NodeQueue[T]) Delete(node *Node[T]) {
+	s.length--
 	if node.Prev == nil {
 		s.First = s.First.Next
 		return
