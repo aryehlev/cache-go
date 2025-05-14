@@ -17,3 +17,7 @@ func (m Main[V]) Put(newNode *structures.Node[V]) (evicted *structures.Node[V], 
 	evicted, wasEviction = m.queue.PutNode(newNode)
 	return
 }
+
+func (m Main[V]) Len() int {
+	return m.queue.Len()
+}

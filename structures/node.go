@@ -49,10 +49,10 @@ func (n *Node[V]) GetVal() V {
 	return n.v
 }
 
-func (n *Node[V]) EvictionPlacement() QueuePlcmt {
+func (n *Node[V]) EvictionPlacement(roomInMain bool) QueuePlcmt {
 	switch n.CurrentQueuePlcmt {
 	case Small:
-		return n.getFromSmall()
+		return n.getFromSmall(roomInMain)
 	case Ghost:
 		return n.getFromGhost()
 	case Main:
@@ -62,13 +62,13 @@ func (n *Node[V]) EvictionPlacement() QueuePlcmt {
 	}
 }
 
-func (n *Node[V]) getFromSmall() QueuePlcmt {
-	if n.Count == 0 {
-		return Ghost
-	} else {
+func (n *Node[V]) getFromSmall(roomInMain bool) QueuePlcmt {
+	if roomInMain || n.Count > 0 {
 		n.Count = 0
 		return Main
 	}
+
+	return Ghost
 }
 
 func (n *Node[V]) getFromMain() QueuePlcmt {

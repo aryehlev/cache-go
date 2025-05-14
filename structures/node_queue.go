@@ -67,3 +67,7 @@ func (s *NodeQueue[T]) Delete(node *Node[T]) {
 
 	node.Prev.Next = node.Next
 }
+
+func (s *NodeQueue[T]) Len() int {
+	return s.length
+}

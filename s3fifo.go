@@ -15,7 +15,8 @@ type Cache[K comparable, V any] struct {
 
 	data map[uint64]*structures.Node[V]
 
-	cap int
+	smallCap int
+	mainCap  int
 }
 
 func New[K comparable, V any](size int) Cache[K, V] {
@@ -23,12 +24,13 @@ func New[K comparable, V any](size int) Cache[K, V] {
 	mainSize := size - smallSize
 
 	return Cache[K, V]{
-		data:   make(map[uint64]*structures.Node[V]),
-		main:   queues.NewMain[V](mainSize),
-		small:  queues.NewSmall[V](smallSize),
-		ghost:  queues.NewGhost(mainSize),
-		hasher: maphash.NewHasher[K](),
-		cap:    size,
+		data:     make(map[uint64]*structures.Node[V]),
+		main:     queues.NewMain[V](mainSize),
+		small:    queues.NewSmall[V](smallSize),
+		ghost:    queues.NewGhost(mainSize),
+		hasher:   maphash.NewHasher[K](),
+		smallCap: smallSize,
+		mainCap:  mainSize,
 	}
 }
 
@@ -60,10 +62,12 @@ func (sf Cache[K, V]) Set(key K, v V) {
 		evicted, needEviction = sf.small.Put(node)
 	}
 
+	roomInMain := sf.main.Len() < sf.mainCap
+
 	iterations := 0
 	for needEviction {
 		iterations++
-		switch evicted.EvictionPlacement() {
+		switch evicted.EvictionPlacement(roomInMain) {
 		case structures.Small:
 			evicted, needEviction = sf.small.Put(evicted)
 		case structures.Main:
