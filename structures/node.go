@@ -6,7 +6,7 @@ const (
 	Ghost QueuePlcmt = "ghost"
 	Small QueuePlcmt = "small"
 
-	maxCount = 5
+	maxCount = 3
 )
 
 type QueuePlcmt string
