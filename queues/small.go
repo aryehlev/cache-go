@@ -19,5 +19,6 @@ func (s Small[V]) Put(newNode *structures.Node[V]) (evicted *structures.Node[V],
 }
 
 func (s Small[V]) Delete(node *structures.Node[V]) {
+	node.CurrentQueuePlcmt = structures.None
 	s.queue.Delete(node)
 }

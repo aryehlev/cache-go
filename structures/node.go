@@ -35,6 +35,10 @@ func (n *Node[V]) Hit() {
 	}
 }
 
+func (n *Node[V]) ResetCount() {
+	n.count.Store(0)
+}
+
 func (n *Node[V]) SetVal(value V) {
 	n.v = value
 }
@@ -59,12 +63,12 @@ func (n *Node[V]) EvictionPlacement(roomInMain bool) QueuePlcmt {
 func (n *Node[V]) getFromSmall(roomInMain bool) QueuePlcmt {
 	count := n.count.Load()
 	if roomInMain || count > 0 {
-		n.count.Store(0)
+		n.ResetCount()
 		return Main
 	}
 
 	if count < 0 {
-		n.count.Store(0)
+		n.ResetCount()
 	}
 
 	return Ghost

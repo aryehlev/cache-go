@@ -47,6 +47,9 @@ func (sf *Cache[K, V]) Where(key K) structures.QueuePlcmt {
 		return structures.Ghost
 	}
 
+	sf.mutex.RLock()
+	defer sf.mutex.RUnlock()
+
 	if n, ok := sf.data[hash]; ok {
 		return n.CurrentQueuePlcmt
 	}
@@ -115,6 +118,8 @@ func (sf *Cache[K, V]) Get(key K) (v V, ok bool) {
 }
 
 func (sf *Cache[K, V]) Size() int {
+	sf.mutex.RLock()
+	defer sf.mutex.RUnlock()
 	return len(sf.data)
 }
 
@@ -135,6 +140,7 @@ func (sf *Cache[K, V]) Delete(key K) bool {
 	}
 
 	delete(sf.data, hash)
+
 	switch node.CurrentQueuePlcmt {
 	case structures.Main:
 		sf.main.Delete(node)
@@ -143,4 +149,16 @@ func (sf *Cache[K, V]) Delete(key K) bool {
 	}
 
 	return true
+}
+
+func (sf *Cache[K, V]) Clear() {
+	sf.mutex.Lock()
+	defer sf.mutex.Unlock()
+
+	initialMapCapacity := sf.smallCap + sf.mainCap + ((sf.smallCap + sf.mainCap) / 4)
+	sf.data = make(map[uint64]*structures.Node[V], initialMapCapacity)
+
+	sf.main = queues.NewMain[V](sf.mainCap)
+	sf.small = queues.NewSmall[V](sf.smallCap)
+	sf.ghost = queues.NewGhost(sf.mainCap)
 }

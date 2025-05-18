@@ -23,5 +23,6 @@ func (m Main[V]) Len() int {
 }
 
 func (m Main[V]) Delete(node *structures.Node[V]) {
+	node.CurrentQueuePlcmt = structures.None
 	m.queue.Delete(node)
 }
