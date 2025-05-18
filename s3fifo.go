@@ -3,39 +3,41 @@ package s3fifo
 import (
 	"github.com/aryehlev/s3fifo/queues"
 	"github.com/aryehlev/s3fifo/structures"
-	"github.com/dolthub/maphash"
+	"hash/maphash"
+	"sync"
 )
 
 type Cache[K comparable, V any] struct {
-	hasher maphash.Hasher[K]
+	hasher maphash.Seed
 
 	main  queues.Main[V]
 	small queues.Small[V]
 	ghost *queues.Ghost
 
-	data map[uint64]*structures.Node[V]
+	data  map[uint64]*structures.Node[V]
+	mutex sync.RWMutex
 
 	smallCap int
 	mainCap  int
 }
 
-func New[K comparable, V any](size int) Cache[K, V] {
+func New[K comparable, V any](size int) *Cache[K, V] {
 	smallSize := size / 10
 	mainSize := size - smallSize
 
-	return Cache[K, V]{
+	return &Cache[K, V]{
 		data:     make(map[uint64]*structures.Node[V]),
 		main:     queues.NewMain[V](mainSize),
 		small:    queues.NewSmall[V](smallSize),
 		ghost:    queues.NewGhost(mainSize),
-		hasher:   maphash.NewHasher[K](),
+		hasher:   maphash.MakeSeed(),
 		smallCap: smallSize,
 		mainCap:  mainSize,
 	}
 }
 
-func (sf Cache[K, V]) Where(key K) structures.QueuePlcmt {
-	hash := sf.hasher.Hash(key)
+func (sf *Cache[K, V]) Where(key K) structures.QueuePlcmt {
+	hash := maphash.Comparable(sf.hasher, key)
 	if sf.ghost.Get(hash) {
 		return structures.Ghost
 	}
@@ -47,13 +49,17 @@ func (sf Cache[K, V]) Where(key K) structures.QueuePlcmt {
 	return structures.None
 }
 
-func (sf Cache[K, V]) Set(key K, v V) {
-	hash := sf.hasher.Hash(key)
+func (sf *Cache[K, V]) Set(key K, v V) {
+	hash := maphash.Comparable(sf.hasher, key)
 
 	var evicted *structures.Node[V]
 	var needEviction bool
 
 	node := structures.NewNode(v, hash)
+
+	sf.mutex.Lock()
+	defer sf.mutex.Unlock()
+
 	sf.data[hash] = node
 
 	if sf.ghost.GetAndDel(hash) {
@@ -85,8 +91,11 @@ func (sf Cache[K, V]) Set(key K, v V) {
 	}
 }
 
-func (sf Cache[K, V]) Get(key K) (v V, ok bool) {
-	hash := sf.hasher.Hash(key)
+func (sf *Cache[K, V]) Get(key K) (v V, ok bool) {
+	hash := maphash.Comparable(sf.hasher, key)
+	sf.mutex.RLock()
+	defer sf.mutex.RUnlock()
+
 	if node, okMap := sf.data[hash]; okMap {
 		node.Hit()
 		v, ok = node.GetVal(), true
@@ -96,6 +105,6 @@ func (sf Cache[K, V]) Get(key K) (v V, ok bool) {
 	return
 }
 
-func (sf Cache[K, V]) Size() int {
+func (sf *Cache[K, V]) Size() int {
 	return len(sf.data)
 }

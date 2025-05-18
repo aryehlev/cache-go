@@ -1,5 +1,7 @@
 package structures
 
+import "sync/atomic"
+
 const (
 	None  QueuePlcmt = "none"
 	Main  QueuePlcmt = "main"
@@ -13,7 +15,7 @@ type QueuePlcmt string
 
 type Node[V any] struct {
 	v                 V
-	Count             uint8
+	Count             atomic.Int32
 	Hash              uint64
 	CurrentQueuePlcmt QueuePlcmt
 	Next              *Node[V]
@@ -36,8 +38,8 @@ func (n *Node[V]) Main() {
 }
 
 func (n *Node[V]) Hit() {
-	if n.Count < maxCount {
-		n.Count++
+	if n.Count.Load() < maxCount {
+		n.Count.Add(1)
 	}
 }
 
@@ -63,19 +65,24 @@ func (n *Node[V]) EvictionPlacement(roomInMain bool) QueuePlcmt {
 }
 
 func (n *Node[V]) getFromSmall(roomInMain bool) QueuePlcmt {
-	if roomInMain || n.Count > 0 {
-		n.Count = 0
+	count := n.Count.Load()
+	if roomInMain || count > 0 {
+		n.Count.Store(0)
 		return Main
+	}
+
+	if count < 0 {
+		n.Count.Store(0)
 	}
 
 	return Ghost
 }
 
 func (n *Node[V]) getFromMain() QueuePlcmt {
-	if n.Count == 0 {
+	if n.Count.Load() <= 0 {
 		return None
 	} else {
-		n.Count--
+		n.Count.Add(-1)
 		return Main
 	}
 }
