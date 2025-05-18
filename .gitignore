@@ -1,0 +1,18 @@
+# Git executables
+*.exe
+git-*
+
+# IDE files
+.idea/
+.vscode/
+
+# Go specific
+*.o
+*.a
+*.so
+_obj
+_test
+*.test
+*.out
+/vendor/
+/Godeps/

@@ -1,10 +1,12 @@
 package s3fifo
 
 import (
-	"github.com/aryehlev/s3fifo/queues"
-	"github.com/aryehlev/s3fifo/structures"
+	"errors"
 	"hash/maphash"
 	"sync"
+
+	"github.com/aryehlev/s3fifo/queues"
+	"github.com/aryehlev/s3fifo/structures"
 )
 
 type Cache[K comparable, V any] struct {
@@ -21,8 +23,11 @@ type Cache[K comparable, V any] struct {
 	mainCap  int
 }
 
-func New[K comparable, V any](size int) *Cache[K, V] {
+func New[K comparable, V any](size int) (*Cache[K, V], error) {
 	smallSize := size / 10
+	if smallSize < 1 {
+		return nil, errors.New("size must be larger than 10")
+	}
 	mainSize := size - smallSize
 
 	return &Cache[K, V]{
@@ -33,7 +38,7 @@ func New[K comparable, V any](size int) *Cache[K, V] {
 		hasher:   maphash.MakeSeed(),
 		smallCap: smallSize,
 		mainCap:  mainSize,
-	}
+	}, nil
 }
 
 func (sf *Cache[K, V]) Where(key K) structures.QueuePlcmt {
