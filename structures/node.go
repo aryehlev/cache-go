@@ -15,7 +15,7 @@ type QueuePlcmt string
 
 type Node[V any] struct {
 	v                 V
-	Count             atomic.Int32
+	count             atomic.Int32
 	Hash              uint64
 	CurrentQueuePlcmt QueuePlcmt
 	Next              *Node[V]
@@ -29,17 +29,9 @@ func NewNode[V any](v V, hash uint64) *Node[V] {
 	}
 }
 
-func (n *Node[V]) Small() {
-	n.CurrentQueuePlcmt = Small
-}
-
-func (n *Node[V]) Main() {
-	n.CurrentQueuePlcmt = Main
-}
-
 func (n *Node[V]) Hit() {
-	if n.Count.Load() < maxCount {
-		n.Count.Add(1)
+	if n.count.Load() < maxCount {
+		n.count.Add(1)
 	}
 }
 
@@ -65,24 +57,24 @@ func (n *Node[V]) EvictionPlacement(roomInMain bool) QueuePlcmt {
 }
 
 func (n *Node[V]) getFromSmall(roomInMain bool) QueuePlcmt {
-	count := n.Count.Load()
+	count := n.count.Load()
 	if roomInMain || count > 0 {
-		n.Count.Store(0)
+		n.count.Store(0)
 		return Main
 	}
 
 	if count < 0 {
-		n.Count.Store(0)
+		n.count.Store(0)
 	}
 
 	return Ghost
 }
 
 func (n *Node[V]) getFromMain() QueuePlcmt {
-	if n.Count.Load() <= 0 {
+	if n.count.Load() <= 0 {
 		return None
 	} else {
-		n.Count.Add(-1)
+		n.count.Add(-1)
 		return Main
 	}
 }

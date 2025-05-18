@@ -55,11 +55,15 @@ func (sf *Cache[K, V]) Set(key K, v V) {
 	var evicted *structures.Node[V]
 	var needEviction bool
 
-	node := structures.NewNode(v, hash)
-
 	sf.mutex.Lock()
 	defer sf.mutex.Unlock()
 
+	if node, ok := sf.data[hash]; ok {
+		node.SetVal(v)
+		return
+	}
+
+	node := structures.NewNode(v, hash)
 	sf.data[hash] = node
 
 	if sf.ghost.GetAndDel(hash) {
@@ -112,22 +116,18 @@ func (sf *Cache[K, V]) Size() int {
 func (sf *Cache[K, V]) Delete(key K) bool {
 	hash := maphash.Comparable(sf.hasher, key)
 
-	sf.mutex.RLock()
-	node, ok := sf.data[hash]
-	if !ok {
-		sf.mutex.RUnlock()
-		return false
-	}
+	sf.mutex.Lock()
+	defer sf.mutex.Unlock()
 
-	if sf.ghost.GetAndDel(hash) {
-		sf.mutex.RUnlock()
+	inGhost := sf.ghost.GetAndDel(hash)
+	if inGhost {
 		return true
 	}
 
-	sf.mutex.RUnlock()
-
-	sf.mutex.Lock()
-	defer sf.mutex.Unlock()
+	node, ok := sf.data[hash]
+	if !ok {
+		return false
+	}
 
 	delete(sf.data, hash)
 	switch node.CurrentQueuePlcmt {
