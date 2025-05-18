@@ -108,3 +108,34 @@ func (sf *Cache[K, V]) Get(key K) (v V, ok bool) {
 func (sf *Cache[K, V]) Size() int {
 	return len(sf.data)
 }
+
+func (sf *Cache[K, V]) Delete(key K) bool {
+	hash := maphash.Comparable(sf.hasher, key)
+
+	sf.mutex.RLock()
+	node, ok := sf.data[hash]
+	if !ok {
+		sf.mutex.RUnlock()
+		return false
+	}
+
+	if sf.ghost.GetAndDel(hash) {
+		sf.mutex.RUnlock()
+		return true
+	}
+
+	sf.mutex.RUnlock()
+
+	sf.mutex.Lock()
+	defer sf.mutex.Unlock()
+
+	delete(sf.data, hash)
+	switch node.CurrentQueuePlcmt {
+	case structures.Main:
+		sf.main.Delete(node)
+	case structures.Small:
+		sf.small.Delete(node)
+	}
+
+	return true
+}

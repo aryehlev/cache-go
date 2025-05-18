@@ -12,8 +12,12 @@ func NewSmall[V any](capacity int) Small[V] {
 	}
 }
 
-func (m Small[V]) Put(newNode *structures.Node[V]) (evicted *structures.Node[V], wasEviction bool) {
+func (s Small[V]) Put(newNode *structures.Node[V]) (evicted *structures.Node[V], wasEviction bool) {
 	newNode.CurrentQueuePlcmt = structures.Small
-	evicted, wasEviction = m.queue.PutNode(newNode)
+	evicted, wasEviction = s.queue.PutNode(newNode)
 	return
+}
+
+func (s Small[V]) Delete(node *structures.Node[V]) {
+	s.queue.Delete(node)
 }

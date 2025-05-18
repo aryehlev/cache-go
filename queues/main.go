@@ -21,3 +21,7 @@ func (m Main[V]) Put(newNode *structures.Node[V]) (evicted *structures.Node[V], 
 func (m Main[V]) Len() int {
 	return m.queue.Len()
 }
+
+func (m Main[V]) Delete(node *structures.Node[V]) {
+	m.queue.Delete(node)
+}
