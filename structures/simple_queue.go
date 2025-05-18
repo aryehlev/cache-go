@@ -16,15 +16,13 @@ func NewSimpleQueue[V any](capacity int) *SimpleQueue[V] {
 		size:     0,
 	}
 }
-
 func (sq *SimpleQueue[V]) Enqueue(value V) (evicted V, wasEviction bool) {
 	if sq.size == sq.capacity {
 		evicted = sq.data[sq.tail]
 		wasEviction = true
 		sq.data[sq.tail] = value
 		sq.tail = (sq.tail + 1) % sq.capacity
-		sq.head = sq.tail
-		return
+		return evicted, true
 	}
 
 	sq.data[sq.head] = value
