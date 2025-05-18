@@ -13,15 +13,6 @@ func NewNodeQueue[T any](capacity int) *NodeQueue[T] {
 	}
 }
 
-func (s *NodeQueue[T]) Put(val T, hash uint64) (evicted *Node[T], wasEviction bool) {
-	newNode := &Node[T]{
-		v:    val,
-		Hash: hash,
-	}
-
-	return s.PutNode(newNode)
-}
-
 func (s *NodeQueue[T]) PutNode(newNode *Node[T]) (evicted *Node[T], wasEviction bool) {
 	if s.length == 0 {
 		s.First = newNode
@@ -46,26 +37,34 @@ func (s *NodeQueue[T]) PutNode(newNode *Node[T]) (evicted *Node[T], wasEviction 
 	return
 }
 
-func (s *NodeQueue[T]) Pop() T {
-	val := s.First.v
+func (s *NodeQueue[T]) Pop() (val T) {
+	if s.First == nil {
+		return
+	}
+	val = s.First.v
 	s.First = s.First.Next
 	s.length--
-	return val
+	return
 }
 
 func (s *NodeQueue[T]) Delete(node *Node[T]) {
-	s.length--
-	if node.Prev == nil {
+	if node.Prev == nil && s.First != nil {
 		s.First = s.First.Next
+		s.length--
 		return
 	}
 
-	if node.Next == nil {
+	if node.Next == nil && s.Last != nil {
 		s.Last = s.Last.Prev
 		s.Last.Next = nil
+		s.length--
+		return
 	}
 
 	node.Prev.Next = node.Next
+	if node.Next != nil {
+		node.Next.Prev = node.Prev
+	}
 }
 
 func (s *NodeQueue[T]) Len() int {

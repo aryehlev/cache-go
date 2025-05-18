@@ -17,6 +17,9 @@ func NewSimpleQueue[V any](capacity int) *SimpleQueue[V] {
 	}
 }
 func (sq *SimpleQueue[V]) Enqueue(value V) (evicted V, wasEviction bool) {
+	if sq.capacity == 0 {
+		return
+	}
 	if sq.size == sq.capacity {
 		evicted = sq.data[sq.tail]
 		wasEviction = true
