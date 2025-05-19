@@ -17,8 +17,7 @@ func (g Ghost) Put(hash uint64) {
 }
 
 func (g Ghost) GetAndDel(key uint64) bool {
-	if g.data.Contains(key) {
-		g.data.Delete(key)
+	if g.data.ContainsAndDelete(key) {
 		return true
 	}
 

@@ -18,15 +18,18 @@ func (s *HashSet) Add(h uint64) {
 	s.used[idx] = true
 }
 
-func (s *HashSet) Contains(h uint64) bool {
-	idx := int(h % uint64(len(s.buckets)))
-	return s.used[idx] && s.buckets[idx] == h
-}
-
-func (s *HashSet) Delete(h uint64) {
+func (s *HashSet) ContainsAndDelete(h uint64) bool {
 	idx := int(h % uint64(len(s.buckets)))
 	if s.used[idx] && s.buckets[idx] == h {
 		s.used[idx] = false
 		s.buckets[idx] = 0
+		return true
 	}
+
+	return false
+}
+
+func (s *HashSet) Contains(h uint64) bool {
+	idx := int(h % uint64(len(s.buckets)))
+	return s.used[idx] && s.buckets[idx] == h
 }
