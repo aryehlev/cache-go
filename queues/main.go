@@ -6,7 +6,7 @@ type Main[V any] struct {
 	queue *structures.NodeQueue[V]
 }
 
-func NewMain[V any](capacity int) Main[V] {
+func NewMain[V any](capacity uint) Main[V] {
 	return Main[V]{
 		queue: structures.NewNodeQueue[V](capacity),
 	}
@@ -18,7 +18,7 @@ func (m Main[V]) Put(newNode *structures.Node[V]) (evicted *structures.Node[V], 
 	return
 }
 
-func (m Main[V]) Len() int {
+func (m Main[V]) Len() uint {
 	return m.queue.Len()
 }
 

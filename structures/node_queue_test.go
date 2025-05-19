@@ -6,11 +6,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func uintToInt(t *testing.T, u int) uint {
+	t.Helper()
+
+	return uint(u)
+}
+
 func TestNewNodeQueue(t *testing.T) {
 	q := NewNodeQueue[int](3)
 	assert.NotNil(t, q)
-	assert.Equal(t, 3, q.capacity)
-	assert.Equal(t, 0, q.Len())
+	assert.Equal(t, uintToInt(t, 3), q.capacity)
+	assert.Empty(t, q.Len())
 }
 
 func TestPutNodeBasic(t *testing.T) {
@@ -19,11 +25,11 @@ func TestPutNodeBasic(t *testing.T) {
 	evicted, wasEviction := q.PutNode(n1)
 	assert.False(t, wasEviction)
 	assert.Nil(t, evicted)
-	assert.Equal(t, 1, q.Len())
+	assert.Equal(t, uintToInt(t, 1), q.Len())
 
 	val := q.Pop()
 	assert.Equal(t, 1, val)
-	assert.Equal(t, 0, q.Len())
+	assert.Empty(t, q.Len())
 }
 
 func TestPutNodeEviction(t *testing.T) {
@@ -36,13 +42,13 @@ func TestPutNodeEviction(t *testing.T) {
 	evicted, wasEviction := q.PutNode(n3)
 	assert.True(t, wasEviction)
 	assert.Equal(t, n1, evicted)
-	assert.Equal(t, 2, q.Len())
+	assert.Equal(t, uintToInt(t, 2), q.Len())
 
 	first := q.Pop()
 	second := q.Pop()
 	assert.Equal(t, 2, first)
 	assert.Equal(t, 3, second)
-	assert.Equal(t, 0, q.Len())
+	assert.Empty(t, q.Len())
 }
 
 func TestPopMultiple(t *testing.T) {
@@ -56,7 +62,7 @@ func TestPopMultiple(t *testing.T) {
 	second := q.Pop()
 	assert.Equal(t, 1, first)
 	assert.Equal(t, 2, second)
-	assert.Equal(t, 0, q.Len())
+	assert.Empty(t, q.Len())
 }
 
 func TestDeleteHead(t *testing.T) {
@@ -69,7 +75,7 @@ func TestDeleteHead(t *testing.T) {
 
 	val := q.Pop()
 	assert.Equal(t, 2, val)
-	assert.Equal(t, 0, q.Len())
+	assert.Empty(t, q.Len())
 }
 
 func TestDeleteTail(t *testing.T) {
@@ -82,7 +88,7 @@ func TestDeleteTail(t *testing.T) {
 
 	val := q.Pop()
 	assert.Equal(t, 1, val)
-	assert.Equal(t, 0, q.Len())
+	assert.Empty(t, q.Len())
 }
 
 func TestDeleteMiddle(t *testing.T) {
@@ -99,7 +105,7 @@ func TestDeleteMiddle(t *testing.T) {
 	second := q.Pop()
 	assert.Equal(t, 1, first)
 	assert.Equal(t, 3, second)
-	assert.Equal(t, 0, q.Len())
+	assert.Empty(t, q.Len())
 	assert.Equal(t, 0, q.Pop())
 	q.Delete(n2)
 	assert.Equal(t, 0, q.Pop())
@@ -107,9 +113,9 @@ func TestDeleteMiddle(t *testing.T) {
 
 func TestLen(t *testing.T) {
 	q := NewNodeQueue[int](5)
-	assert.Equal(t, 0, q.Len())
+	assert.Empty(t, q.Len())
 	q.PutNode(&Node[int]{v: 42})
-	assert.Equal(t, 1, q.Len())
+	assert.Equal(t, uintToInt(t, 1), q.Len())
 }
 
 func TestDeleteOnlyThenDeleteAgain(t *testing.T) {
@@ -117,11 +123,11 @@ func TestDeleteOnlyThenDeleteAgain(t *testing.T) {
 	n1 := &Node[int]{v: 99}
 	q.PutNode(n1)
 	q.Delete(n1)
-	// queue is now empty
-	assert.Equal(t, 0, q.Len())
+
+	assert.Empty(t, q.Len())
 
 	q.Delete(n1)
-	assert.Equal(t, 0, q.Len())
+	assert.Empty(t, q.Len())
 }
 
 func TestDeleteOnlyThenPop(t *testing.T) {
@@ -134,5 +140,5 @@ func TestDeleteOnlyThenPop(t *testing.T) {
 		val := q.Pop()
 		assert.Equal(t, 0, val)
 	})
-	assert.Equal(t, 0, q.Len())
+	assert.Empty(t, q.Len())
 }

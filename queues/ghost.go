@@ -1,37 +1,24 @@
 package queues
 
-import (
-	"github.com/aryehlev/s3fifo/structures"
-)
+import "github.com/aryehlev/s3fifo/structures"
 
 type Ghost struct {
-	queue *structures.SimpleQueue[uint64]
-
-	data map[uint64]bool
+	data *structures.HashSet
 }
 
-func NewGhost(size int) *Ghost {
+func NewGhost(size uint) *Ghost {
 	return &Ghost{
-		data:  make(map[uint64]bool),
-		queue: structures.NewSimpleQueue[uint64](size),
+		data: structures.NewHashSet(size),
 	}
 }
 
 func (g Ghost) Put(hash uint64) {
-	if g.data[hash] {
-		return
-	}
-
-	evictedFromGhost, wasEvictedGhost := g.queue.Enqueue(hash)
-	g.data[hash] = true
-	if wasEvictedGhost {
-		delete(g.data, evictedFromGhost)
-	}
+	g.data.Add(hash)
 }
 
 func (g Ghost) GetAndDel(key uint64) bool {
-	if g.data[key] {
-		delete(g.data, key)
+	if g.data.Contains(key) {
+		g.data.Delete(key)
 		return true
 	}
 
@@ -39,5 +26,5 @@ func (g Ghost) GetAndDel(key uint64) bool {
 }
 
 func (g Ghost) Get(key uint64) bool {
-	return g.data[key]
+	return g.data.Contains(key)
 }

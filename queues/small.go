@@ -6,7 +6,7 @@ type Small[V any] struct {
 	queue *structures.NodeQueue[V]
 }
 
-func NewSmall[V any](capacity int) Small[V] {
+func NewSmall[V any](capacity uint) Small[V] {
 	return Small[V]{
 		queue: structures.NewNodeQueue[V](capacity),
 	}

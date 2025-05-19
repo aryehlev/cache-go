@@ -19,11 +19,11 @@ type Cache[K comparable, V any] struct {
 	data  map[uint64]*structures.Node[V]
 	mutex sync.RWMutex
 
-	smallCap int
-	mainCap  int
+	smallCap uint
+	mainCap  uint
 }
 
-func New[K comparable, V any](size int) (*Cache[K, V], error) {
+func New[K comparable, V any](size uint) (*Cache[K, V], error) {
 	smallSize := size / 10
 	if smallSize < 1 {
 		return nil, errors.New("size must be larger than 10")

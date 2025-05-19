@@ -3,11 +3,11 @@ package structures
 type NodeQueue[T any] struct {
 	First    *Node[T]
 	Last     *Node[T]
-	capacity int
-	length   int
+	capacity uint
+	length   uint
 }
 
-func NewNodeQueue[T any](capacity int) *NodeQueue[T] {
+func NewNodeQueue[T any](capacity uint) *NodeQueue[T] {
 	return &NodeQueue[T]{capacity: capacity}
 }
 
@@ -83,6 +83,6 @@ func (q *NodeQueue[T]) Delete(node *Node[T]) {
 	node.Next, node.Prev = nil, nil
 }
 
-func (q *NodeQueue[T]) Len() int {
+func (q *NodeQueue[T]) Len() uint {
 	return q.length
 }
