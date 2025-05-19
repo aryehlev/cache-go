@@ -1,12 +1,12 @@
-package s3fifo
+package cache_go
 
 import (
 	"errors"
 	"hash/maphash"
 	"sync"
 
-	"github.com/aryehlev/s3fifo/queues"
-	"github.com/aryehlev/s3fifo/structures"
+	"github.com/aryehlev/cache-go/queues"
+	"github.com/aryehlev/cache-go/structures"
 )
 
 type Cache[K comparable, V any] struct {

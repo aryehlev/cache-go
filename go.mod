@@ -1,9 +1,8 @@
-module github.com/aryehlev/s3fifo
+module github.com/aryehlev/cache-go
 
 go 1.24
 
 require (
-	github.com/dolthub/maphash v0.1.0
 	github.com/stretchr/testify v1.8.1
 )
 

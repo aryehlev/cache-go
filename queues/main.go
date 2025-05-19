@@ -1,6 +1,6 @@
 package queues
 
-import "github.com/aryehlev/s3fifo/structures"
+import "github.com/aryehlev/cache-go/structures"
 
 type Main[V any] struct {
 	queue *structures.NodeQueue[V]
