@@ -41,30 +41,48 @@ func (s *NodeQueue[T]) Pop() (val T) {
 	if s.First == nil {
 		return
 	}
+
 	val = s.First.v
+
+	if s.First == s.Last {
+		s.Last = nil
+		s.First = nil
+		s.length--
+		return
+	}
+
 	s.First = s.First.Next
+	if s.First != nil {
+		s.First.Prev = nil
+	}
+
 	s.length--
 	return
 }
 
 func (s *NodeQueue[T]) Delete(node *Node[T]) {
-	if node.Prev == nil && s.First != nil {
+	if s.First == nil { // queue is empty
+		return
+	}
+
+	if node.Prev == nil { // the node is the first.
 		s.First = s.First.Next
 		s.length--
 		return
 	}
 
-	if node.Next == nil && s.Last != nil {
+	if node.Next == nil { // the node is last.
 		s.Last = s.Last.Prev
 		s.Last.Next = nil
+
 		s.length--
 		return
 	}
 
-	node.Prev.Next = node.Next
-	if node.Next != nil {
-		node.Next.Prev = node.Prev
-	}
+	next := node.Next
+	node.Prev.Next = next
+	node.Next.Prev = node.Prev
+	s.length--
 }
 
 func (s *NodeQueue[T]) Len() int {

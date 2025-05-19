@@ -100,6 +100,9 @@ func TestDeleteMiddle(t *testing.T) {
 	assert.Equal(t, 1, first)
 	assert.Equal(t, 3, second)
 	assert.Equal(t, 0, q.Len())
+	assert.Equal(t, 0, q.Pop())
+	q.Delete(n2)
+	assert.Equal(t, 0, q.Pop())
 }
 
 func TestLen(t *testing.T) {
