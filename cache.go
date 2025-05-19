@@ -51,7 +51,7 @@ func (sf *Cache[K, V]) Where(key K) structures.QueuePlcmt {
 	defer sf.mutex.RUnlock()
 
 	if n, ok := sf.data[hash]; ok {
-		return n.CurrentQueuePlcmt
+		return n.CurrentPlcmt()
 	}
 
 	return structures.None
@@ -91,7 +91,7 @@ func (sf *Cache[K, V]) Set(key K, v V) {
 		case structures.Main:
 			evicted, needEviction = sf.main.Put(evicted)
 			if needEviction && iterations > 20 {
-				evicted.CurrentQueuePlcmt = structures.None
+				evicted.None()
 			}
 		case structures.Ghost:
 			sf.ghost.Put(evicted.Hash)
@@ -141,7 +141,7 @@ func (sf *Cache[K, V]) Delete(key K) bool {
 
 	delete(sf.data, hash)
 
-	switch node.CurrentQueuePlcmt {
+	switch node.CurrentPlcmt() {
 	case structures.Main:
 		sf.main.Delete(node)
 	case structures.Small:

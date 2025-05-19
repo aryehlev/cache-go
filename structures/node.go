@@ -17,7 +17,7 @@ type Node[V any] struct {
 	v                 V
 	count             atomic.Int32
 	Hash              uint64
-	CurrentQueuePlcmt QueuePlcmt
+	currentQueuePlcmt QueuePlcmt
 	Next              *Node[V]
 	Prev              *Node[V]
 }
@@ -35,6 +35,26 @@ func (n *Node[V]) Hit() {
 	}
 }
 
+func (n *Node[V]) Main() {
+	n.currentQueuePlcmt = Main
+}
+
+func (n *Node[V]) Small() {
+	n.currentQueuePlcmt = Small
+}
+
+func (n *Node[V]) Ghost() {
+	n.currentQueuePlcmt = Ghost
+}
+
+func (n *Node[V]) None() {
+	n.currentQueuePlcmt = None
+}
+
+func (n *Node[V]) CurrentPlcmt() QueuePlcmt {
+	return n.currentQueuePlcmt
+}
+
 func (n *Node[V]) ResetCount() {
 	n.count.Store(0)
 }
@@ -48,7 +68,7 @@ func (n *Node[V]) GetVal() V {
 }
 
 func (n *Node[V]) NextPlacement(roomInMain bool) QueuePlcmt {
-	switch n.CurrentQueuePlcmt {
+	switch n.currentQueuePlcmt {
 	case Small:
 		return n.evictedFromSmallPlcmt(roomInMain)
 	case Ghost:

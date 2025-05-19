@@ -13,7 +13,7 @@ func NewMain[V any](capacity uint) Main[V] {
 }
 
 func (m Main[V]) Put(newNode *structures.Node[V]) (evicted *structures.Node[V], wasEviction bool) {
-	newNode.CurrentQueuePlcmt = structures.Main
+	newNode.Main()
 	evicted, wasEviction = m.queue.PutNode(newNode)
 	return
 }
@@ -23,6 +23,6 @@ func (m Main[V]) Len() uint {
 }
 
 func (m Main[V]) Delete(node *structures.Node[V]) {
-	node.CurrentQueuePlcmt = structures.None
+	node.None()
 	m.queue.Delete(node)
 }
