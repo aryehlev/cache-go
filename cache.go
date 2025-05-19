@@ -85,7 +85,7 @@ func (sf *Cache[K, V]) Set(key K, v V) {
 	iterations := 0
 	for needEviction {
 		iterations++
-		switch evicted.EvictionPlacement(roomInMain) {
+		switch evicted.NextPlacement(roomInMain) {
 		case structures.Small:
 			evicted, needEviction = sf.small.Put(evicted)
 		case structures.Main:
