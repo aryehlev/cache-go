@@ -8,65 +8,81 @@ type NodeQueue[T any] struct {
 }
 
 func NewNodeQueue[T any](capacity int) *NodeQueue[T] {
-	return &NodeQueue[T]{
-		capacity: capacity,
-	}
+	return &NodeQueue[T]{capacity: capacity}
 }
 
-func (s *NodeQueue[T]) PutNode(newNode *Node[T]) (evicted *Node[T], wasEviction bool) {
-	if s.length == 0 {
-		s.First = newNode
-		s.Last = newNode
-
-		s.length++
+func (q *NodeQueue[T]) PutNode(newNode *Node[T]) (evicted *Node[T], wasEviction bool) {
+	if q.length == 0 {
+		q.First, q.Last = newNode, newNode
+		q.length = 1
 		return
 	}
 
-	s.length++
-	s.Last.Next = newNode
-	newNode.Prev = s.Last
-	s.Last = newNode
+	q.Last.Next = newNode
+	newNode.Prev = q.Last
+	q.Last = newNode
+	q.length++
 
-	if s.length > s.capacity {
-		evicted = s.First
+	if q.length > q.capacity {
 		wasEviction = true
-		s.length--
-		s.First = s.First.Next
+		evicted = q.First
+
+		q.First = evicted.Next
+		q.First.Prev = nil
+		q.length--
+
+		evicted.Next, evicted.Prev = nil, nil
 	}
 
-	return
+	return evicted, wasEviction
 }
 
-func (s *NodeQueue[T]) Pop() (val T) {
-	if s.First == nil {
+func (q *NodeQueue[T]) Pop() (value T) {
+	if q.length == 0 {
 		return
 	}
-	val = s.First.v
-	s.First = s.First.Next
-	s.length--
-	return
+
+	node := q.First
+	value = node.v
+
+	if q.length == 1 {
+		q.First, q.Last = nil, nil
+	} else {
+		q.First = node.Next
+		q.First.Prev = nil
+	}
+	q.length--
+
+	node.Next, node.Prev = nil, nil
+	return value
 }
 
-func (s *NodeQueue[T]) Delete(node *Node[T]) {
-	if node.Prev == nil && s.First != nil {
-		s.First = s.First.Next
-		s.length--
+func (q *NodeQueue[T]) Delete(node *Node[T]) {
+	if node == nil || q.length == 0 {
 		return
 	}
 
-	if node.Next == nil && s.Last != nil {
-		s.Last = s.Last.Prev
-		s.Last.Next = nil
-		s.length--
-		return
-	}
+	switch {
+	case node == q.First && node == q.Last:
+		q.First, q.Last = nil, nil
 
-	node.Prev.Next = node.Next
-	if node.Next != nil {
+	case node == q.First:
+		q.First = node.Next
+		q.First.Prev = nil
+
+	case node == q.Last:
+		q.Last = node.Prev
+		q.Last.Next = nil
+
+	default:
+		node.Prev.Next = node.Next
 		node.Next.Prev = node.Prev
 	}
+
+	q.length--
+	node.Next, node.Prev = nil, nil
 }
 
-func (s *NodeQueue[T]) Len() int {
-	return s.length
+func (q *NodeQueue[T]) Len() int {
+	return q.length
 }
