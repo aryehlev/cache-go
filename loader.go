@@ -10,7 +10,8 @@ type CacheWithLoader[K comparable, V any] struct {
 	loader LoaderFunc[K, V]
 }
 
-// NewWithLoader creates a new cache with the specified size and loader function.
+// NewWithLoader returns a new CacheWithLoader of the given size, using the provided loader function to fetch values not present in the cache.
+// Returns an error if the underlying cache cannot be created.
 func NewWithLoader[K comparable, V any](size uint, loader LoaderFunc[K, V]) (*CacheWithLoader[K, V], error) {
 	cache, err := New[K, V](size)
 	if err != nil {
