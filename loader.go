@@ -26,11 +26,6 @@ func NewWithLoader[K comparable, V any](size uint, loader LoaderFunc[K, V]) (*Ca
 // Get retrieves a value from the cache. If the value is not in the cache,
 // it attempts to load it using the loader function.
 func (cl *CacheWithLoader[K, V]) Get(key K) (V, bool) {
-	// Try to get from cache first
-	value, found := cl.Cache.Get(key)
-	if found {
-		return value, true
-	}
 
 	// If not in cache, try to load from backend
 	if cl.loader != nil {
@@ -41,6 +36,13 @@ func (cl *CacheWithLoader[K, V]) Get(key K) (V, bool) {
 			return value, true
 		}
 	}
+
+	// Try to get from cache first
+	value, found := cl.Cache.Get(key)
+	if found {
+		return value, true
+	}
+
 
 	// Return zero value if not found
 	var zero V
